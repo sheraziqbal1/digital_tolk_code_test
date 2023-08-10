@@ -1,3 +1,30 @@
+My Feedback:
+============
+I find the code to be more than satisfactory, given the task's requirements and expectations. It demonstrates good readability, 
+maintainability, and flexibility.
+
+The code structure, including its layers, is well organized and contributes to easy management and future feature implementation.
+
+Reasons for Not Labeling the Code as "Awesome":
+==============================================
+While the code certainly showcases positive aspects, I believe there are some areas that could be further enhanced:
+
+- Superfluous spaces and empty lines could be trimmed to improve code cleanliness.
+- In certain sections, the absence of spaces makes the code appear slightly complex and harder to follow.
+- Some variables were not being used, leading to unnecessary clutter.
+- A few segments of the code seemed redundant and could be removed.
+- Some function comments were either missing or incomplete, which could make understanding their purpose less intuitive.
+
+My Contributions:
+================
+I took the liberty to refactor the code for improved clarity. Shorthand coding techniques were employed, and unnecessary spaces 
+were removed to enhance the overall readability and aesthetics of the code. 
+In addition, I added appropriate spaces to ensure a consistent and pleasing visual presentation. Function comments were either 
+added or completed, aiming to provide comprehensive context to each function's role and functionality.
+
+
+--------------------------------------------------------------------------------------------------------------------
+
 Do at least ONE of the following tasks: refactor is mandatory. Write tests is optional, will be good bonus to see it. 
 Please do not invest more than 2-4 hours on this.
 Upload your results to a Github repo, for easier sharing and reviewing.

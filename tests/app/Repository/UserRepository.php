@@ -34,7 +34,6 @@ class UserRepository extends BaseRepository
     function __construct(User $model)
     {
         parent::__construct($model);
-//        $this->mailer = $mailer;
         $this->logger = new Logger('admin_logger');
 
         $this->logger->pushHandler(new StreamHandler(storage_path('logs/admin/laravel-' . date('Y-m-d') . '.log'), Logger::DEBUG));
@@ -55,6 +54,7 @@ class UserRepository extends BaseRepository
 
 
         if (!$id || $id && $request['password']) $model->password = bcrypt($request['password']);
+        
         $model->detachAllRoles();
         $model->save();
         $model->attachRole($request['role']);
@@ -77,7 +77,6 @@ class UserRepository extends BaseRepository
             }
 
             $user_meta = UserMeta::firstOrCreate(['user_id' => $model->id]);
-            $old_meta = $user_meta->toArray();
             $user_meta->consumer_type = $request['consumer_type'];
             $user_meta->customer_type = $request['customer_type'];
             $user_meta->username = $request['username'];
@@ -97,33 +96,43 @@ class UserRepository extends BaseRepository
             $user_meta->charge_km = isset($request['charge_km']) ? $request['charge_km'] : '';
             $user_meta->maximum_km = isset($request['maximum_km']) ? $request['maximum_km'] : '';
             $user_meta->save();
-            $new_meta = $user_meta->toArray();
 
             $blacklistUpdated = [];
             $userBlacklist = UsersBlacklist::where('user_id', $id)->get();
             $userTranslId = collect($userBlacklist)->pluck('translator_id')->all();
 
             $diff = null;
+            
             if ($request['translator_ex']) {
                 $diff = array_intersect($userTranslId, $request['translator_ex']);
             }
+            
             if ($diff || $request['translator_ex']) {
+            
                 foreach ($request['translator_ex'] as $translatorId) {
+            
                     $blacklist = new UsersBlacklist();
+            
                     if ($model->id) {
+            
                         $already_exist = UsersBlacklist::translatorExist($model->id, $translatorId);
+            
                         if ($already_exist == 0) {
+            
                             $blacklist->user_id = $model->id;
                             $blacklist->translator_id = $translatorId;
                             $blacklist->save();
                         }
+                        
                         $blacklistUpdated [] = $translatorId;
                     }
 
                 }
+
                 if ($blacklistUpdated) {
                     UsersBlacklist::deleteFromBlacklist($model->id, $blacklistUpdated);
                 }
+
             } else {
                 UsersBlacklist::where('user_id', $model->id)->delete();
             }
@@ -135,9 +144,11 @@ class UserRepository extends BaseRepository
 
             $user_meta->translator_type = $request['translator_type'];
             $user_meta->worked_for = $request['worked_for'];
+            
             if ($request['worked_for'] == 'yes') {
                 $user_meta->organization_number = $request['organization_number'];
             }
+            
             $user_meta->gender = $request['gender'];
             $user_meta->translator_level = $request['translator_level'];
             $user_meta->additional_info = $request['additional_info'];
@@ -149,17 +160,23 @@ class UserRepository extends BaseRepository
 
             $data['translator_type'] = $request['translator_type'];
             $data['worked_for'] = $request['worked_for'];
+            
             if ($request['worked_for'] == 'yes') {
                 $data['organization_number'] = $request['organization_number'];
             }
+            
             $data['gender'] = $request['gender'];
             $data['translator_level'] = $request['translator_level'];
 
             $langidUpdated = [];
+            
             if ($request['user_language']) {
+            
                 foreach ($request['user_language'] as $langId) {
+            
                     $userLang = new UserLanguages();
                     $already_exit = $userLang::langExist($model->id, $langId);
+            
                     if ($already_exit == 0) {
                         $userLang->user_id = $model->id;
                         $userLang->lang_id = $langId;
@@ -168,6 +185,7 @@ class UserRepository extends BaseRepository
                     $langidUpdated[] = $langId;
 
                 }
+            
                 if ($langidUpdated) {
                     $userLang::deleteLang($model->id, $langidUpdated);
                 }
@@ -180,34 +198,41 @@ class UserRepository extends BaseRepository
             $towns = new Town;
             $towns->townname = $request['new_towns'];
             $towns->save();
-            $newTownsId = $towns->id;
         }
 
         $townidUpdated = [];
+        
         if ($request['user_towns_projects']) {
-            $del = DB::table('user_towns')->where('user_id', '=', $model->id)->delete();
+        
+            DB::table('user_towns')->where('user_id', '=', $model->id)->delete();
+        
             foreach ($request['user_towns_projects'] as $townId) {
+        
                 $userTown = new UserTowns();
                 $already_exit = $userTown::townExist($model->id, $townId);
+        
                 if ($already_exit == 0) {
+        
                     $userTown->user_id = $model->id;
                     $userTown->town_id = $townId;
                     $userTown->save();
                 }
+        
                 $townidUpdated[] = $townId;
-
             }
         }
 
-        if ($request['status'] == '1') {
-            if ($model->status != '1') {
-                $this->enable($model->id);
-            }
+        if ($request['status'] == '1' && $model->status != '1') {
+            
+            $this->enable($model->id);
+        
         } else {
+
             if ($model->status != '0') {
                 $this->disable($model->id);
             }
         }
+
         return $model ? $model : false;
     }
 
@@ -216,7 +241,6 @@ class UserRepository extends BaseRepository
         $user = User::findOrFail($id);
         $user->status = '1';
         $user->save();
-
     }
 
     public function disable($id)
@@ -224,12 +248,10 @@ class UserRepository extends BaseRepository
         $user = User::findOrFail($id);
         $user->status = '0';
         $user->save();
-
     }
 
     public function getTranslators()
     {
         return User::where('user_type', 2)->get();
     }
-    
 }
